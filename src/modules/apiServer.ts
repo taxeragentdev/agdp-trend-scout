@@ -98,7 +98,7 @@ export class APIServer {
           framework: 'OpenClaw ACP',
           language: 'TypeScript',
           blockchain: 'Base Chain',
-          scraping: 'Playwright'
+          dataSource: 'Virtuals API'
         },
         contact: {
           telegram: config.telegramBotToken ? 'Enabled' : 'Disabled',
@@ -110,6 +110,81 @@ export class APIServer {
 
     this.app.get('/ping', (_req: Request, res: Response) => {
       res.send('pong');
+    });
+
+    // OpenClaw ACP specific endpoints
+    this.app.get('/acp/capabilities', (_req: Request, res: Response) => {
+      res.json({
+        version: '1.0.0',
+        protocol: 'OpenClaw ACP',
+        capabilities: {
+          monitoring: true,
+          analytics: true,
+          notifications: true,
+          autonomous: config.cognitiveLoopEnabled
+        },
+        endpoints: {
+          health: '/health',
+          status: '/status',
+          metrics: '/metrics',
+          info: '/info',
+          capabilities: '/acp/capabilities',
+          agent: '/acp/agent'
+        },
+        timestamp: new Date().toISOString()
+      });
+    });
+
+    this.app.get('/acp/agent', (_req: Request, res: Response) => {
+      res.json({
+        id: config.agentName.toLowerCase().replace(/\s+/g, '-'),
+        name: config.agentName,
+        version: config.agentVersion,
+        type: 'analytics',
+        status: this.isRunning ? 'active' : 'idle',
+        protocol: {
+          name: 'OpenClaw ACP',
+          version: '1.0.0'
+        },
+        performance: {
+          uptime: process.uptime(),
+          lastScan: this.lastScanTime || null,
+          agentsTracked: this.lastScanData?.data?.length || 0
+        },
+        configuration: {
+          scanInterval: config.scrapeIntervalMinutes,
+          cognitiveLoop: config.cognitiveLoopEnabled,
+          thresholds: {
+            highMomentum: config.highMomentumRankThreshold,
+            breakoutFrom: config.breakoutFromRank,
+            breakoutTo: config.breakoutToRank,
+            elitePerformance: config.elitePerformanceScoreThreshold
+          }
+        },
+        integrations: {
+          telegram: !!(config.telegramBotToken && config.telegramChatId),
+          blockchain: !!config.walletPrivateKey,
+          network: 'Base Chain'
+        },
+        timestamp: new Date().toISOString()
+      });
+    });
+
+    // POST endpoint for external triggers (optional)
+    this.app.post('/acp/trigger-scan', async (_req: Request, res: Response) => {
+      try {
+        res.json({
+          status: 'accepted',
+          message: 'Scan trigger received. Agent will process on next cycle.',
+          timestamp: new Date().toISOString()
+        });
+      } catch (error) {
+        res.status(500).json({
+          status: 'error',
+          message: 'Failed to trigger scan',
+          error: error instanceof Error ? error.message : 'Unknown error'
+        });
+      }
     });
   }
 
