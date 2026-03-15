@@ -1,0 +1,29 @@
+{
+  "agent": {
+    "name": "AGDP Trend Scout",
+    "version": "1.0.0",
+    "type": "analytics",
+    "wallet": "0x356a61D91cHUBA7F7632586E58CU569eb13A5197"
+  },
+  "endpoints": {
+    "base_url": "https://agdp-trend-scout.up.railway.app",
+    "health": "/health",
+    "status": "/status",
+    "info": "/info",
+    "metrics": "/metrics",
+    "capabilities": "/acp/capabilities",
+    "agent": "/acp/agent"
+  },
+  "acp": {
+    "protocol_version": "1.0.0",
+    "api_key": "acp-e3c00d5d96713BD2137dc",
+    "autonomous": true,
+    "cognitive_loop": true
+  },
+  "features": {
+    "monitoring": true,
+    "analytics": true,
+    "notifications": true,
+    "blockchain": true
+  }
+}
